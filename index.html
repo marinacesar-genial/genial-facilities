@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genial Facilities</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #efede8;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1a1916;
+    --text2: #6b6860;
+    --text3: #9e9b94;
+    --accent: #2a5f4f;
+    --accent-light: #e8f2ee;
+    --accent-text: #1a3d31;
+    --blue: #1e4fa8;
+    --blue-light: #e8eef9;
+    --amber: #7a4a00;
+    --amber-light: #fef3e2;
+    --red: #8b1a1a;
+    --red-light: #fdeaea;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 220px;
+    height: 100vh;
+    background: var(--text);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 20px;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+
+  .logo-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 8px;
+    padding: 0 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.55);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    text-decoration: none;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85); }
+  .nav-item.active { background: var(--accent); color: #fff; }
+
+  .nav-item svg { width: 15px; height: 15px; opacity: 0.7; flex-shrink: 0; }
+  .nav-item.active svg { opacity: 1; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sync-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    font-family: 'DM Mono', monospace;
+    padding: 0 8px;
+    margin-bottom: 10px;
+  }
+
+  .sync-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    flex-shrink: 0;
+  }
+  .sync-dot.ok { background: #4caf7d; }
+  .sync-dot.loading { background: #f5a623; animation: pulse 1s infinite; }
+  .sync-dot.error { background: #e05555; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .sync-btn {
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sync-btn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+
+  /* MAIN */
+  .main {
+    margin-left: 220px;
+    padding: 32px 32px 48px;
+    min-height: 100vh;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+
+  .filter-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0 12px;
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+    height: 36px;
+  }
+
+  .filter-search svg { width: 14px; height: 14px; color: var(--text3); flex-shrink: 0; }
+
+  .filter-search input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    width: 100%;
+  }
+
+  .filter-search input::placeholder { color: var(--text3); }
+
+  select.filter-select {
+    height: 36px;
+    padding: 0 28px 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6860' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    outline: none;
+  }
+
+  /* METRICS */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .metric:hover::before { opacity: 1; }
+
+  .metric-label {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 6px;
+  }
+
+  /* CHARTS GRID */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .legend i {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  table.data-table th {
+    text-align: left;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-weight: 400;
+    padding: 0 12px 10px 0;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  table.data-table td {
+    padding: 10px 12px 10px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:hover td { background: var(--bg); }
+
+  /* PILLS */
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+  .pill.open { background: var(--blue-light); color: var(--blue); }
+  .pill.closed { background: var(--accent-light); color: var(--accent-text); }
+  .pill.pending { background: var(--amber-light); color: var(--amber); }
+  .pill.other { background: var(--surface2); color: var(--text2); }
+
+  /* TICKET NUMBER */
+  .ticket-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  /* EMPTY / LOADING */
+  .empty {
+    text-align: center;
+    padding: 48px 0;
+    color: var(--text3);
+    font-size: 13px;
+  }
+
+  .loading-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .loading-bar-inner {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    border-radius: 1px;
+    transition: width 0.4s ease;
+  }
+
+  /* FADE IN */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    animation: fadeUp 0.3s ease forwards;
+    opacity: 0;
+  }
+
+  .fade-in:nth-child(1) { animation-delay: 0s; }
+  .fade-in:nth-child(2) { animation-delay: 0.05s; }
+  .fade-in:nth-child(3) { animation-delay: 0.1s; }
+  .fade-in:nth-child(4) { animation-delay: 0.15s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .sidebar { width: 60px; padding: 20px 10px; }
+    .logo-name, .logo-sub, .nav-item span, .nav-label, .sync-status, .sync-btn { display: none; }
+    .main { margin-left: 60px; padding: 20px 16px; }
+    .charts-row { grid-template-columns: 1fr; }
+    .logo { justify-content: center; margin-bottom: 20px; }
+    .nav-item { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="none" stroke="#fff" stroke-width="1.5"/></svg>
+    </div>
+    <div>
+      <div class="logo-name">Genial Facilities</div>
+      <div class="logo-sub">Operations</div>
+    </div>
+  </div>
+
+  <div class="nav-label">Menu</div>
+  <a class="nav-item active" onclick="showPage('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>Dashboard</span>
+  </a>
+  <a class="nav-item" onclick="showPage('tickets')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span>Tickets</span>
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="sync-status">
+      <div class="sync-dot loading" id="sync-dot"></div>
+      <span id="sync-label">Sincronizando...</span>
+    </div>
+    <button class="sync-btn" onclick="loadData()">↻ Atualizar dados</button>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page active" id="page-dashboard">
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub" id="dash-sub">Carregando dados...</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="filter-select" id="dash-unit-filter" onchange="applyDashFilters()">
+          <option value="">Todas as unidades</option>
+        </select>
+        <select class="filter-select" id="dash-period-filter" onchange="applyDashFilters()">
+          <option value="">Todo período</option>
+          <option value="7">Últimos 7 dias</option>
+          <option value="30">Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="loading-bar"><div class="loading-bar-inner" id="loading-bar"></div></div>
+
+    <div class="metrics" id="metrics-grid">
+      <div class="metric fade-in"><div class="metric-label">Total</div><div class="metric-value" id="m-total">—</div><div class="metric-sub">todos os tickets</div></div>
+      <div class="metric fade-in"><div class="metric-label">Abertos</div><div class="metric-value" id="m-open" style="color:var(--blue)">—</div><div class="metric-sub">aguardando resolução</div></div>
+      <div class="metric fade-in"><div class="metric-label">Fechados</div><div class="metric-value" id="m-closed" style="color:var(--accent)">—</div><div class="metric-sub">resolvidos</div></div>
+      <div class="metric fade-in"><div class="metric-label">Resolução</div><div class="metric-value" id="m-rate">—</div><div class="metric-sub">taxa de fechamento</div></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="card">
+        <div class="card-title">Status dos tickets</div>
+        <div class="legend" id="leg-status"></div>
+        <div style="position:relative;height:200px"><canvas id="ch-status" role="img" aria-label="Status dos tickets">Distribuição por status.</canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Tickets por unidade</div>
+        <div class="legend" id="leg-unit"></div>
+        <div style="position:relative;height:200px"><canvas id="ch-unit" role="img" aria-label="Tickets por unidade">Tickets por unidade.</canvas></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Motivos de solicitação</div>
+      <div class="legend" id="leg-motivo"></div>
+      <div id="ch-motivo-wrap" style="position:relative;height:220px"><canvas id="ch-motivo" role="img" aria-label="Motivos de solicitação">Motivos mais frequentes.</canvas></div>
+    </div>
+  </div>
+
+  <!-- TICKETS PAGE -->
+  <div class="page" id="page-tickets">
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Tickets</h1>
+        <p class="page-sub" id="tickets-count">—</p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="filter-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Buscar por número, assunto..." oninput="filterTickets()">
+      </div>
+      <select class="filter-select" id="unit-filter" onchange="filterTickets()">
+        <option value="">Todas as unidades</option>
+      </select>
+      <select class="filter-select" id="status-filter" onchange="filterTickets()">
+        <option value="">Todos os status</option>
+        <option value="Open">Aberto</option>
+        <option value="Closed">Fechado</option>
+      </select>
+      <select class="filter-select" id="period-filter" onchange="filterTickets()">
+        <option value="">Todo período</option>
+        <option value="7">Últimos 7 dias</option>
+        <option value="30">Últimos 30 dias</option>
+        <option value="90">Últimos 90 dias</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th style="width:70px">#</th>
+            <th>Assunto</th>
+            <th style="width:130px">Unidade</th>
+            <th style="width:120px">Motivo</th>
+            <th style="width:90px">Status</th>
+            <th style="width:90px">Abertura</th>
+            <th style="width:90px">Fechamento</th>
+          </tr></thead>
+          <tbody id="tickets-tbody">
+            <tr><td colspan="7"><div class="empty">Carregando tickets...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;text-align:right;font-size:11px;color:var(--text3)" id="table-footer"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = "https://script.google.com/a/macros/genialcare.com.br/s/AKfycbyEG3JNXqtklF26q_cQJduIp67RiDx6QU1iAepsDhZdmptXCZbGoOAPbfFDjXL-IRjomQ/exec";
+const PALETTE = ['#2a5f4f','#1e4fa8','#c4501a','#7a3a8a','#b07a00','#1a6b5a','#8b3a3a','#3a5a8a','#5a7a1a','#6b4a2a'];
+
+let allTickets = [];
+let charts = {};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot ' + state;
+  document.getElementById('sync-label').textContent = label;
+}
+
+function pillCls(s) {
+  if (!s) return 'other';
+  const v = s.toLowerCase();
+  if (v.includes('open') || v.includes('aberto')) return 'open';
+  if (v.includes('closed') || v.includes('fechado') || v.includes('resolved')) return 'closed';
+  if (v.includes('pending') || v.includes('hold') || v.includes('aguardando')) return 'pending';
+  return 'other';
+}
+
+function countBy(arr, key) {
+  const m = {};
+  arr.forEach(t => { const v = (t[key] || '').trim() || '(não informado)'; m[v] = (m[v] || 0) + 1; });
+  return m;
+}
+
+function legend(id, labels, colors) {
+  document.getElementById(id).innerHTML = labels.map((l, i) =>
+    `<span><i style="background:${colors[i % colors.length]}"></i>${l}</span>`).join('');
+}
+
+function mkChart(id, type, labels, data, colors, extra) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderRadius: type === 'doughnut' ? 0 : 5,
+        borderWidth: type === 'doughnut' ? 3 : 0,
+        borderColor: '#ffffff',
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      ...extra
+    }
+  });
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  const p = str.split('/');
+  if (p.length === 3) return new Date(p[2], p[1] - 1, p[0]);
+  return new Date(str);
+}
+
+function filterByPeriod(tickets, days) {
+  if (!days) return tickets;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - parseInt(days));
+  return tickets.filter(t => {
+    const d = parseDate(t['Data de Abertura']);
+    return d && d >= cutoff;
+  });
+}
+
+function applyDashFilters() {
+  const unit = document.getElementById('dash-unit-filter').value;
+  const period = document.getElementById('dash-period-filter').value;
+  let filtered = allTickets;
+  if (unit) filtered = filtered.filter(t => (t['CG Unidade'] || '') === unit);
+  filtered = filterByPeriod(filtered, period);
+  renderCharts(filtered);
+  renderMetrics(filtered);
+}
+
+function renderMetrics(tickets) {
+  const total = tickets.length;
+  const stMap = countBy(tickets, 'Status');
+  const openN = Object.entries(stMap).filter(([k]) => pillCls(k) === 'open').reduce((a, [, v]) => a + v, 0);
+  const closedN = Object.entries(stMap).filter(([k]) => pillCls(k) === 'closed').reduce((a, [, v]) => a + v, 0);
+  const rate = total > 0 ? Math.round(closedN / total * 100) : 0;
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-open').textContent = openN;
+  document.getElementById('m-closed').textContent = closedN;
+  document.getElementById('m-rate').textContent = rate + '%';
+  document.getElementById('dash-sub').textContent = `${total} tickets • atualizado em ${new Date().toLocaleString('pt-BR')}`;
+}
+
+function renderCharts(tickets) {
+  const sMap = countBy(tickets, 'Status');
+  const sL = Object.keys(sMap), sD = Object.values(sMap), sC = sL.map((_, i) => PALETTE[i % PALETTE.length]);
+  legend('leg-status', sL.map((l, i) => `${l} (${sD[i]})`), sC);
+  mkChart('ch-status', 'doughnut', sL, sD, sC, { cutout: '62%' });
+
+  const uMap = countBy(tickets, 'CG Unidade');
+  delete uMap['(não informado)'];
+  const uL = Object.keys(uMap).sort((a, b) => uMap[b] - uMap[a]);
+  const uD = uL.map(k => uMap[k]), uC = uL.map((_, i) => PALETTE[i % PALETTE.length]);
+  legend('leg-unit', uL.map((l, i) => `${l} (${uD[i]})`), uC);
+  mkChart('ch-unit', 'bar', uL, uD, uC, {
+    scales: {
+      x: { ticks: { font: { size: 10, family: 'DM Mono' }, autoSkip: false, maxRotation: 30 }, grid: { display: false } },
+      y: { ticks: { font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } }
+    }
+  });
+
+  const mMap = countBy(tickets, 'Motivo da Solicitação');
+  delete mMap['(não informado)'];
+  const mL = Object.keys(mMap).sort((a, b) => mMap[b] - mMap[a]).slice(0, 8);
+  const mD = mL.map(k => mMap[k]), mC = mL.map((_, i) => PALETTE[i % PALETTE.length]);
+  legend('leg-motivo', mL.map((l, i) => `${l} (${mD[i]})`), mC);
+  const mH = Math.max(mL.length * 44 + 60, 160);
+  document.getElementById('ch-motivo-wrap').style.height = mH + 'px';
+  mkChart('ch-motivo', 'bar', mL, mD, mC, {
+    indexAxis: 'y',
+    scales: {
+      x: { ticks: { font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+      y: { ticks: { font: { size: 10, family: 'DM Mono' } }, grid: { display: false } }
+    }
+  });
+}
+
+function populateFilters() {
+  const units = [...new Set(allTickets.map(t => t['CG Unidade']).filter(Boolean))].sort();
+  ['dash-unit-filter', 'unit-filter'].forEach(id => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">Todas as unidades</option>` +
+      units.map(u => `<option value="${u}" ${u === cur ? 'selected' : ''}>${u}</option>`).join('');
+  });
+}
+
+function filterTickets() {
+  const search = (document.getElementById('search-input').value || '').toLowerCase();
+  const unit = document.getElementById('unit-filter').value;
+  const status = document.getElementById('status-filter').value;
+  const period = document.getElementById('period-filter').value;
+
+  let filtered = allTickets;
+  if (search) filtered = filtered.filter(t =>
+    (t['Número do Ticket'] || '').toString().includes(search) ||
+    (t['Assunto'] || '').toLowerCase().includes(search) ||
+    (t['Motivo da Solicitação'] || '').toLowerCase().includes(search)
+  );
+  if (unit) filtered = filtered.filter(t => (t['CG Unidade'] || '') === unit);
+  if (status) filtered = filtered.filter(t => (t['Status'] || '').includes(status));
+  filtered = filterByPeriod(filtered, period);
+
+  renderTable(filtered);
+  document.getElementById('tickets-count').textContent = `${filtered.length} de ${allTickets.length} tickets`;
+}
+
+function renderTable(tickets) {
+  if (!tickets.length) {
+    document.getElementById('tickets-tbody').innerHTML =
+      `<tr><td colspan="7"><div class="empty">Nenhum ticket encontrado.</div></td></tr>`;
+    document.getElementById('table-footer').textContent = '';
+    return;
+  }
+
+  const sorted = [...tickets].sort((a, b) => {
+    const da = parseDate(a['Data de Abertura']) || new Date(0);
+    const db = parseDate(b['Data de Abertura']) || new Date(0);
+    return db - da;
+  });
+
+  document.getElementById('tickets-tbody').innerHTML = sorted.map(t => `
+    <tr>
+      <td><span class="ticket-num">#${t['Número do Ticket'] || ''}</span></td>
+      <td title="${(t['Assunto'] || '').replace(/"/g, '')}">${t['Assunto'] || '—'}</td>
+      <td>${t['CG Unidade'] || '—'}</td>
+      <td title="${(t['Motivo da Solicitação'] || '').replace(/"/g, '')}">${t['Motivo da Solicitação'] || '—'}</td>
+      <td><span class="pill ${pillCls(t['Status'])}">${t['Status'] || '—'}</span></td>
+      <td style="color:var(--text2)">${t['Data de Abertura'] || '—'}</td>
+      <td style="color:var(--text2)">${t['Data de Fechamento'] || '—'}</td>
+    </tr>`).join('');
+
+  document.getElementById('table-footer').textContent = `${tickets.length} tickets exibidos`;
+}
+
+async function loadData() {
+  setSyncStatus('loading', 'Sincronizando...');
+  document.getElementById('loading-bar').style.width = '30%';
+
+  try {
+    const res = await fetch(API);
+    document.getElementById('loading-bar').style.width = '70%';
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    allTickets = json.tickets || [];
+    document.getElementById('loading-bar').style.width = '100%';
+
+    if (!allTickets.length) {
+      setSyncStatus('error', 'Sem dados');
+      return;
+    }
+
+    populateFilters();
+    renderMetrics(allTickets);
+    renderCharts(allTickets);
+    renderTable(allTickets);
+    document.getElementById('tickets-count').textContent = `${allTickets.length} tickets`;
+    setSyncStatus('ok', 'Atualizado');
+
+    setTimeout(() => { document.getElementById('loading-bar').style.width = '0%'; }, 800);
+  } catch (e) {
+    setSyncStatus('error', 'Erro ao carregar');
+    document.getElementById('loading-bar').style.width = '0%';
+    document.getElementById('tickets-tbody').innerHTML =
+      `<tr><td colspan="7"><div class="empty" style="color:#8b1a1a">Não foi possível carregar os dados. Verifique a conexão.</div></td></tr>`;
+  }
+}
+
+loadData();
+
+const REFRESH_INTERVAL = 15 * 60 * 1000;
+let refreshTimer = setInterval(loadData, REFRESH_INTERVAL);
+let countdown = REFRESH_INTERVAL / 1000;
+
+setInterval(() => {
+  countdown--;
+  if (countdown <= 0) countdown = REFRESH_INTERVAL / 1000;
+  const min = Math.floor(countdown / 60);
+  const sec = String(countdown % 60).padStart(2, '0');
+  const label = document.getElementById('sync-label');
+  if (document.getElementById('sync-dot').className.includes('ok')) {
+    label.textContent = `Próx. sync: ${min}:${sec}`;
+  }
+}, 1000);
+</script>
+</body>
+</html>
